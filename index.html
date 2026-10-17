@@ -7,129 +7,173 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TS Milk">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#1f7a5c">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#14523f">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<style>html{background:#14523f}body{margin:0;min-height:100vh}.bar{padding-top:calc(14px + env(safe-area-inset-top,0px))!important}main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))!important}</style>
 </head>
 <body>
 <style>
-/* Layout: single column calculator — inputs card, then results panel */
+/* Layout: app bar with Clear on top, input sheet, then result sheet with payment band */
 :root{
-  --bg:#f3f6f5; --surface:#ffffff; --fg:#17231f; --muted:#5d6e68; --line:#d6e0dc;
-  --accent:#1f7a5c; --accent-ink:#ffffff; --result:#e6f2ed; --danger:#b4432f;
-  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:ui-monospace,Menlo,Consolas,monospace;
+  --bg:#eef2f1; --surface:#ffffff; --fg:#14201c; --muted:#62716b; --line:#dbe3e0; --field:#f6f8f7;
+  --brand:#14523f; --brand-ink:#ffffff; --brand-soft:#e3efe9; --accent:#1d7a5b; --danger:#b23a26;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0f1614; --surface:#17211e; --fg:#e6efeb; --muted:#93a59e; --line:#2a3833;
-  --accent:#4cbf94; --accent-ink:#06130e; --result:#1b2d27; --danger:#e07a64; color-scheme:dark}}
+  --bg:#0b1210; --surface:#141d1a; --fg:#e7efec; --muted:#93a39d; --line:#26332f; --field:#0f1714;
+  --brand:#10372b; --brand-ink:#e7efec; --brand-soft:#16302a; --accent:#4cc296; --danger:#ef8a74; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1614; --surface:#17211e; --fg:#e6efeb; --muted:#93a59e; --line:#2a3833;
-  --accent:#4cbf94; --accent-ink:#06130e; --result:#1b2d27; --danger:#e07a64; color-scheme:dark}
+  --bg:#0b1210; --surface:#141d1a; --fg:#e7efec; --muted:#93a39d; --line:#26332f; --field:#0f1714;
+  --brand:#10372b; --brand-ink:#e7efec; --brand-soft:#16302a; --accent:#4cc296; --danger:#ef8a74; color-scheme:dark}
 
+*{box-sizing:border-box}
 input,button,label{touch-action:manipulation}
-body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
-.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-h1{font-size:1.4rem;font-weight:600;margin:0;text-wrap:balance}
-.sub{color:var(--muted);font-size:.875rem;margin:4px 0 0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;-webkit-font-smoothing:antialiased}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
-.field{display:flex;flex-direction:column;gap:6px}
-label{font-size:.8rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.opt{text-transform:none;letter-spacing:0;font-weight:400}
-input.num{font:600 1.15rem var(--mono);color:var(--fg);background:var(--bg);border:1px solid var(--line);
-  border-radius:8px;padding:12px;width:100%;box-sizing:border-box;font-variant-numeric:tabular-nums}
-input.num:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bar{background:var(--brand);color:var(--brand-ink);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px}
+.bar-in{max-width:520px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.14);display:grid;place-items:center;
+  font:700 .85rem var(--sans);letter-spacing:.02em;flex:none}
+.brand h1{font-size:1.05rem;font-weight:650;margin:0;line-height:1.2}
+.brand p{font-size:.75rem;margin:2px 0 0;opacity:.75}
+.clear{display:flex;align-items:center;gap:6px;font:600 .9rem var(--sans);color:var(--brand-ink);
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:9px 14px;cursor:pointer;flex:none}
+.clear:active{background:rgba(255,255,255,.22)}
+.clear svg{width:16px;height:16px}
 
-.adda{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
-  border-top:1px solid var(--line);padding-top:14px}
-.check{display:flex;align-items:center;gap:10px;font-weight:500;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--fg);font-size:1rem}
-.check input{width:22px;height:22px;accent-color:var(--accent)}
-.stepper{display:flex;align-items:center;gap:8px}
-.stepper button{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);
-  font:600 1.3rem var(--sans);cursor:pointer}
-.stepper button:disabled{opacity:.4;cursor:default}
-.stepper output{font:600 1.15rem var(--mono);min-width:2.5ch;text-align:center}
-.hint{font-size:.8rem;color:var(--muted);width:100%}
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 
-.results{background:var(--result);border-radius:12px;padding:16px;display:flex;flex-direction:column}
-.results .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.results .line:last-child{border-bottom:0}
-.results .k{color:var(--muted);font-size:.9rem}
-.results .v{font:600 1.25rem var(--mono);font-variant-numeric:tabular-nums;text-align:right}
-.results .pay .v{font-size:1.6rem;color:var(--accent)}
-.formula{font-size:.8rem;color:var(--muted);padding-bottom:6px}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sheet-h h2{font-size:.72rem;font-weight:650;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+.tag{font-size:.72rem;font-weight:600;color:var(--accent);background:var(--brand-soft);padding:4px 9px;border-radius:999px}
+.sheet-b{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full{grid-column:1/-1}
 
-.clear{font:600 1rem var(--sans);padding:14px;border-radius:10px;border:1px solid var(--danger);
-  background:transparent;color:var(--danger);cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:.82rem;font-weight:600;color:var(--fg)}
+.field label small{font-weight:400;color:var(--muted)}
+.box{display:flex;align-items:center;background:var(--field);border:1.5px solid var(--line);border-radius:12px;transition:border-color .15s}
+.box:focus-within{border-color:var(--accent)}
+.box input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:600 1.2rem var(--mono);
+  padding:13px 0 13px 14px;font-variant-numeric:tabular-nums;outline:none}
+.box input::placeholder{color:var(--muted);opacity:.5;font-weight:500}
+.unit{padding:0 14px 0 6px;font-size:.85rem;font-weight:600;color:var(--muted)}
+
+.adda{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding-top:14px;border-top:1px dashed var(--line)}
+.switch{display:flex;align-items:center;gap:12px;cursor:pointer}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.track{width:46px;height:28px;border-radius:999px;background:var(--line);position:relative;transition:background .2s;flex:none}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch input:checked + .track{background:var(--accent)}
+.switch input:checked + .track::after{transform:translateX(18px)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+.sw-text b{display:block;font-size:.95rem}
+.sw-text span{font-size:.75rem;color:var(--muted)}
+.stepper{display:flex;align-items:center;background:var(--field);border:1.5px solid var(--line);border-radius:12px}
+.stepper button{width:44px;height:42px;border:0;background:transparent;color:var(--fg);font:500 1.4rem var(--sans);cursor:pointer}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper output{min-width:3ch;text-align:center;font:650 1.1rem var(--mono);font-variant-numeric:tabular-nums}
+
+.rows{padding:4px 16px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .k{font-size:.92rem;color:var(--muted)}
+.row .v{font:650 1.2rem var(--mono);font-variant-numeric:tabular-nums}
+.row.total .k{color:var(--fg);font-weight:600}
+.pay{background:var(--brand);color:var(--brand-ink);padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pay .k{font-size:.72rem;font-weight:650;text-transform:uppercase;letter-spacing:.08em;opacity:.8}
+.pay .sub{font-size:.75rem;opacity:.7;margin-top:3px}
+.pay .v{font:700 1.75rem var(--mono);font-variant-numeric:tabular-nums;text-align:right;word-break:break-all}
+
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 
-<div class="wrap">
-  <header>
-    <h1>TS Milk Calculator</h1>
-    <p class="sub">Enter Gross Milk and Fat%. Add CLR to use the full formula.</p>
-  </header>
-
-  <section class="card">
-    <div class="field">
-      <label for="gross">Gross Milk (L)</label>
-      <input class="num" id="gross" type="text" inputmode="decimal" autocomplete="off">
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <div class="logo">TS</div>
+      <div><h1>TS Milk Calculator</h1><p>Milk collection centre</p></div>
     </div>
-    <div class="row2">
-      <div class="field">
-        <label for="fat">Fat %</label>
-        <input class="num" id="fat" type="text" inputmode="decimal" autocomplete="off">
+    <button class="clear" id="clearBtn" type="button" aria-label="Clear all entries">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      Clear
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="sheet">
+      <div class="sheet-h"><h2>Milk entry</h2><span class="tag" id="formula">Enter Gross &amp; Fat%</span></div>
+      <div class="sheet-b">
+        <div class="field full">
+          <label for="gross">Gross Milk</label>
+          <div class="box"><input class="num" id="gross" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="unit">L</span></div>
+        </div>
+        <div class="field">
+          <label for="fat">Fat</label>
+          <div class="box"><input class="num" id="fat" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="clr">CLR <small>optional</small></label>
+          <div class="box"><input class="num" id="clr" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="unit">LR</span></div>
+        </div>
+        <div class="field full">
+          <label for="rate">Rate</label>
+          <div class="box"><input class="num" id="rate" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00"><span class="unit">per L</span></div>
+        </div>
+
+        <div class="adda">
+          <label class="switch" for="addaOn">
+            <input id="addaOn" type="checkbox">
+            <span class="track"></span>
+            <span class="sw-text"><b>Adda</b><span id="addaHint">Off</span></span>
+          </label>
+          <div class="stepper">
+            <button id="addaDec" type="button" aria-label="Decrease Adda" disabled>−</button>
+            <output id="addaVal">0</output>
+            <button id="addaInc" type="button" aria-label="Increase Adda" disabled>+</button>
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label for="clr">CLR <span class="opt">(optional)</span></label>
-        <input class="num" id="clr" type="text" inputmode="decimal" autocomplete="off">
+    </section>
+
+    <section class="sheet" aria-live="polite">
+      <div class="sheet-h"><h2>Result</h2></div>
+      <div class="rows">
+        <div class="row"><span class="k">TS Milk</span><span class="v" id="outTs">—</span></div>
+        <div class="row" id="addaLine" hidden><span class="k">Adda</span><span class="v" id="outAdda">—</span></div>
+        <div class="row total"><span class="k">Total Milk</span><span class="v" id="outTotal">—</span></div>
       </div>
-    </div>
-    <div class="field">
-      <label for="rate">Rate (per L)</label>
-      <input class="num" id="rate" type="text" inputmode="decimal" autocomplete="off">
-    </div>
-
-    <div class="adda">
-      <label class="check" for="addaOn"><input id="addaOn" type="checkbox"> Adda</label>
-      <div class="stepper">
-        <button id="addaDec" type="button" aria-label="Decrease Adda" disabled>−</button>
-        <output id="addaVal">0</output>
-        <button id="addaInc" type="button" aria-label="Increase Adda" disabled>+</button>
+      <div class="pay">
+        <div><div class="k">Payment</div><div class="sub">Total Milk × Rate</div></div>
+        <div class="v" id="outPay">—</div>
       </div>
-      <div class="hint" id="addaHint">Tick to calculate Adda automatically.</div>
-    </div>
-  </section>
-
-  <section class="results" aria-live="polite">
-    <div class="formula" id="formula">Waiting for Gross Milk and Fat%</div>
-    <div class="line"><span class="k">TS Milk</span><span class="v" id="outTs">—</span></div>
-    <div class="line" id="addaLine" hidden><span class="k">Adda</span><span class="v" id="outAdda">—</span></div>
-    <div class="line"><span class="k">Total Milk</span><span class="v" id="outTotal">—</span></div>
-    <div class="line pay"><span class="k">Payment</span><span class="v" id="outPay">—</span></div>
-  </section>
-
-  <button class="clear" id="clearBtn" type="button">Clear All</button>
-</div>
+    </section>
+  </div>
+</main>
 
 <script>
 const $ = id => document.getElementById(id);
 const num = id => { const v = $(id).value.trim().replace(",", "."); if (v === "") return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
-let addaAdjust = 0; // manual +/- on top of auto Adda
+let addaAdjust = 0;
 
-// Round rule: decimal >= 0.60 rounds up, otherwise down
 function roundTs(x){
   const whole = Math.floor(x);
   const dec = x - whole;
   return dec >= 0.6 - 1e-9 ? whole + 1 : whole;
 }
 
-// Every full 100 L = 1 Adda; remainder over 50 L = +1
 function autoAdda(ts){
   const full = Math.floor(ts / 100);
   const rest = ts - full * 100;
@@ -140,9 +184,9 @@ function calcTs(){
   const g = num("gross"), f = num("fat"), lr = num("clr");
   if (g === null || f === null) return null;
   if (lr !== null){
-    return { raw: (((0.25*lr) + (0.22*f) + 0.72 + f) * g) / 13, label: "Formula: Gross, Fat% & CLR" };
+    return { raw: (((0.25*lr) + (0.22*f) + 0.72 + f) * g) / 13, label: "Gross + Fat + CLR" };
   }
-  return { raw: (g * f) / 5, label: "Formula: Gross & Fat%" };
+  return { raw: (g * f) / 5, label: "Gross + Fat" };
 }
 
 const fmt = n => n.toLocaleString("en-US", {maximumFractionDigits: 2});
@@ -157,10 +201,10 @@ function render(){
   $("addaInc").disabled = !on;
 
   if (!res){
-    $("formula").textContent = "Waiting for Gross Milk and Fat%";
+    $("formula").textContent = "Enter Gross & Fat%";
     ["outTs","outAdda","outTotal","outPay"].forEach(id => $(id).textContent = "—");
     $("addaVal").textContent = on ? Math.max(0, addaAdjust) : "0";
-    $("addaHint").textContent = on ? "Auto Adda appears once TS Milk is calculated." : "Tick to calculate Adda automatically.";
+    $("addaHint").textContent = on ? "Auto after TS Milk" : "Off";
     return;
   }
 
@@ -176,8 +220,8 @@ function render(){
   $("outTotal").textContent = fmt(total) + " L";
   $("outPay").textContent = rate === null ? "—" : fmt(total * rate);
   $("addaHint").textContent = on
-    ? (addaAdjust === 0 ? `Auto: ${auto}` : `Auto: ${auto}, adjusted ${addaAdjust > 0 ? "+" : ""}${addaAdjust}`)
-    : "Tick to calculate Adda automatically.";
+    ? (addaAdjust === 0 ? `Auto: ${auto}` : `Auto ${auto}, adjusted ${addaAdjust > 0 ? "+" : ""}${addaAdjust}`)
+    : "Off";
 }
 
 ["gross","fat","clr","rate"].forEach(id => $(id).addEventListener("input", render));
@@ -199,5 +243,6 @@ $("clearBtn").addEventListener("click", () => {
 render();
 if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(() => {}); }
 </script>
+
 </body>
 </html>
