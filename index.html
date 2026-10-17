@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TS Milk Calculator</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TS Milk">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#1f7a5c">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head>
+<body>
+<style>
+/* Layout: single column calculator — inputs card, then results panel */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --fg:#17231f; --muted:#5d6e68; --line:#d6e0dc;
+  --accent:#1f7a5c; --accent-ink:#ffffff; --result:#e6f2ed; --danger:#b4432f;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1614; --surface:#17211e; --fg:#e6efeb; --muted:#93a59e; --line:#2a3833;
+  --accent:#4cbf94; --accent-ink:#06130e; --result:#1b2d27; --danger:#e07a64; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1614; --surface:#17211e; --fg:#e6efeb; --muted:#93a59e; --line:#2a3833;
+  --accent:#4cbf94; --accent-ink:#06130e; --result:#1b2d27; --danger:#e07a64; color-scheme:dark}
+
+input,button,label{touch-action:manipulation}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-size:1.4rem;font-weight:600;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.875rem;margin:4px 0 0}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:.8rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.opt{text-transform:none;letter-spacing:0;font-weight:400}
+input.num{font:600 1.15rem var(--mono);color:var(--fg);background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:12px;width:100%;box-sizing:border-box;font-variant-numeric:tabular-nums}
+input.num:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.adda{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  border-top:1px solid var(--line);padding-top:14px}
+.check{display:flex;align-items:center;gap:10px;font-weight:500;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--fg);font-size:1rem}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);
+  font:600 1.3rem var(--sans);cursor:pointer}
+.stepper button:disabled{opacity:.4;cursor:default}
+.stepper output{font:600 1.15rem var(--mono);min-width:2.5ch;text-align:center}
+.hint{font-size:.8rem;color:var(--muted);width:100%}
+
+.results{background:var(--result);border-radius:12px;padding:16px;display:flex;flex-direction:column}
+.results .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.results .line:last-child{border-bottom:0}
+.results .k{color:var(--muted);font-size:.9rem}
+.results .v{font:600 1.25rem var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.results .pay .v{font-size:1.6rem;color:var(--accent)}
+.formula{font-size:.8rem;color:var(--muted);padding-bottom:6px}
+
+.clear{font:600 1rem var(--sans);padding:14px;border-radius:10px;border:1px solid var(--danger);
+  background:transparent;color:var(--danger);cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>TS Milk Calculator</h1>
+    <p class="sub">Enter Gross Milk and Fat%. Add CLR to use the full formula.</p>
+  </header>
+
+  <section class="card">
+    <div class="field">
+      <label for="gross">Gross Milk (L)</label>
+      <input class="num" id="gross" type="text" inputmode="decimal" autocomplete="off">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fat">Fat %</label>
+        <input class="num" id="fat" type="text" inputmode="decimal" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="clr">CLR <span class="opt">(optional)</span></label>
+        <input class="num" id="clr" type="text" inputmode="decimal" autocomplete="off">
+      </div>
+    </div>
+    <div class="field">
+      <label for="rate">Rate (per L)</label>
+      <input class="num" id="rate" type="text" inputmode="decimal" autocomplete="off">
+    </div>
+
+    <div class="adda">
+      <label class="check" for="addaOn"><input id="addaOn" type="checkbox"> Adda</label>
+      <div class="stepper">
+        <button id="addaDec" type="button" aria-label="Decrease Adda" disabled>−</button>
+        <output id="addaVal">0</output>
+        <button id="addaInc" type="button" aria-label="Increase Adda" disabled>+</button>
+      </div>
+      <div class="hint" id="addaHint">Tick to calculate Adda automatically.</div>
+    </div>
+  </section>
+
+  <section class="results" aria-live="polite">
+    <div class="formula" id="formula">Waiting for Gross Milk and Fat%</div>
+    <div class="line"><span class="k">TS Milk</span><span class="v" id="outTs">—</span></div>
+    <div class="line" id="addaLine" hidden><span class="k">Adda</span><span class="v" id="outAdda">—</span></div>
+    <div class="line"><span class="k">Total Milk</span><span class="v" id="outTotal">—</span></div>
+    <div class="line pay"><span class="k">Payment</span><span class="v" id="outPay">—</span></div>
+  </section>
+
+  <button class="clear" id="clearBtn" type="button">Clear All</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const num = id => { const v = $(id).value.trim().replace(",", "."); if (v === "") return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+let addaAdjust = 0; // manual +/- on top of auto Adda
+
+// Round rule: decimal >= 0.60 rounds up, otherwise down
+function roundTs(x){
+  const whole = Math.floor(x);
+  const dec = x - whole;
+  return dec >= 0.6 - 1e-9 ? whole + 1 : whole;
+}
+
+// Every full 100 L = 1 Adda; remainder over 50 L = +1
+function autoAdda(ts){
+  const full = Math.floor(ts / 100);
+  const rest = ts - full * 100;
+  return full + (rest > 50 ? 1 : 0);
+}
+
+function calcTs(){
+  const g = num("gross"), f = num("fat"), lr = num("clr");
+  if (g === null || f === null) return null;
+  if (lr !== null){
+    return { raw: (((0.25*lr) + (0.22*f) + 0.72 + f) * g) / 13, label: "Formula: Gross, Fat% & CLR" };
+  }
+  return { raw: (g * f) / 5, label: "Formula: Gross & Fat%" };
+}
+
+const fmt = n => n.toLocaleString("en-US", {maximumFractionDigits: 2});
+
+function render(){
+  const res = calcTs();
+  const on = $("addaOn").checked;
+  const rate = num("rate");
+
+  $("addaLine").hidden = !on;
+  $("addaDec").disabled = !on;
+  $("addaInc").disabled = !on;
+
+  if (!res){
+    $("formula").textContent = "Waiting for Gross Milk and Fat%";
+    ["outTs","outAdda","outTotal","outPay"].forEach(id => $(id).textContent = "—");
+    $("addaVal").textContent = on ? Math.max(0, addaAdjust) : "0";
+    $("addaHint").textContent = on ? "Auto Adda appears once TS Milk is calculated." : "Tick to calculate Adda automatically.";
+    return;
+  }
+
+  const ts = roundTs(res.raw);
+  const auto = autoAdda(ts);
+  const adda = on ? Math.max(0, auto + addaAdjust) : 0;
+  const total = ts + adda;
+
+  $("formula").textContent = res.label;
+  $("outTs").textContent = fmt(ts) + " L";
+  $("outAdda").textContent = fmt(adda) + " L";
+  $("addaVal").textContent = adda;
+  $("outTotal").textContent = fmt(total) + " L";
+  $("outPay").textContent = rate === null ? "—" : fmt(total * rate);
+  $("addaHint").textContent = on
+    ? (addaAdjust === 0 ? `Auto: ${auto}` : `Auto: ${auto}, adjusted ${addaAdjust > 0 ? "+" : ""}${addaAdjust}`)
+    : "Tick to calculate Adda automatically.";
+}
+
+["gross","fat","clr","rate"].forEach(id => $(id).addEventListener("input", render));
+$("addaOn").addEventListener("change", () => { addaAdjust = 0; render(); });
+$("addaInc").addEventListener("click", () => { addaAdjust++; render(); });
+$("addaDec").addEventListener("click", () => {
+  const res = calcTs();
+  const auto = res ? autoAdda(roundTs(res.raw)) : 0;
+  if (auto + addaAdjust > 0) addaAdjust--;
+  render();
+});
+$("clearBtn").addEventListener("click", () => {
+  ["gross","fat","clr","rate"].forEach(id => $(id).value = "");
+  $("addaOn").checked = false;
+  addaAdjust = 0;
+  render();
+  $("gross").focus();
+});
+render();
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(() => {}); }
+</script>
+</body>
+</html>
